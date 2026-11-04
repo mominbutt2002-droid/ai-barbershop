@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Barber {
+  id        String     @id @default(cuid())
+  name      String
+  role      String
+  bio       String     @default("")
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  schedules Schedule[]
+  bookings  Booking[]
+}
+
+model Schedule {
+  id       String @id @default(cuid())
+  barberId String
+  barber   Barber @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  weekday  Int
+  startMin Int
+  endMin   Int
+
+  @@unique([barberId, weekday])
+}
+
+model Service {
+  id          String    @id @default(cuid())
+  name        String
+  durationMin Int
+  price       Int
+  description String    @default("")
+  sortOrder   Int       @default(0)
+  active      Boolean   @default(true)
+  bookings    Booking[]
+}
+
+model Booking {
+  id         String   @id @default(cuid())
+  barberId   String
+  barber     Barber   @relation(fields: [barberId], references: [id], onDelete: Restrict)
+  serviceId  String
+  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  clientName String
+  phone      String
+  date       String
+  startMin   Int
+  endMin     Int
+  source     String
+  status     String
+  comment            String   @default("")
+  telegramChatId     String?
+  reminderHourSent   Boolean  @default(false)
+  reminderFiveSent   Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  @@index([barberId, date])
+}

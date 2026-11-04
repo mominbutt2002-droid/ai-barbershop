@@ -1,0 +1,37 @@
+{
+  "name": "ai-barbershop",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "bot": "tsx src/bot/index.js",
+    "db:setup": "prisma generate && prisma migrate deploy && tsx prisma/seed.js",
+    "tunnel": "npx --yes cloudflared tunnel --url http://localhost:3000"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "dotenv": "^18.0.9",
+    "grammy": "^1.46.0",
+    "next": "16.4.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^9",
+    "eslint-config-next": "16.4.3",
+    "prisma": "^6.19.3",
+    "tsx": "^4.23.15"
+  },
+  "allowScripts": {
+    "prisma@6.19.3": true,
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "esbuild@0.28.2": true
+  }
+}
