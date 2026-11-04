@@ -337,8 +337,16 @@ bot.catch((error) => {
   console.error("Сбой бота", error);
 });
 
-export async function startBot() {
-  startReminderLoop();
+export { bot };
+
+export function webhookSecret() {
+  return String(process.env.TELEGRAM_WEBHOOK_SECRET || process.env.SESSION_SECRET || "")
+    .replace(/[^A-Za-z0-9_-]/g, "")
+    .slice(0, 256);
+}
+
+export async function configureTelegram() {
+  if (!process.env.BOT_TOKEN) return;
   const url = miniAppUrl();
   await bot.api.setMyCommands([
     { command: "start", description: "Записаться на кресло" },
@@ -350,8 +358,24 @@ export async function startBot() {
       ? { type: "web_app", text: "Календарь", web_app: { url } }
       : { type: "commands" },
   });
+  const origin = String(process.env.WEBAPP_URL || "")
+    .trim()
+    .replace(/\/$/, "");
   if (url) console.log(`Mini App: ${url}`);
-  else console.log("Mini App выключен: задайте WEBAPP_URL=https://ваш-домен и перезапустите бота.");
+  const useWebhook = Boolean(process.env.VERCEL) || process.env.TELEGRAM_WEBHOOK === "1";
+  if (useWebhook && origin.startsWith("https://")) {
+    const secret = webhookSecret();
+    await bot.api.setWebhook(`${origin}/api/telegram`, secret ? { secret_token: secret } : {});
+    console.log(`Webhook: ${origin}/api/telegram`);
+  } else if (!url) {
+    console.log("Mini App выключен: задайте WEBAPP_URL=https://ваш-домен.");
+  }
+}
+
+export async function startBot() {
+  startReminderLoop();
+  await bot.api.deleteWebhook();
+  await configureTelegram();
   await bot.start({
     onStart: () => console.log("Бот Кромки слушает Telegram"),
   });
